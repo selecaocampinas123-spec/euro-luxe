@@ -95,7 +95,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
             console.log('Avançou para etapa:', currentStep);
         } else {
-            alert('Formulário enviado! Profile Photo Index: ' + profilePhotoIndex);
+            // Formulário completo - redirecionar para página de ativação
+            console.log('Formulário enviado! Profile Photo Index:', profilePhotoIndex);
+            window.location.href = 'activate.html';
         }
     };
 
