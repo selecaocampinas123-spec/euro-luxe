@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cadastro de perfil feminino - Euro Luxe">
+    <title>Cadastro - Euro Luxe</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="signup.css">
+</head>
+
+<body>
+    <div class="signup-container">
+        <!-- Header -->
+        <header class="signup-header">
+            <a href="index.html" class="back-link">← Voltar</a>
+            <img src="euro.png" alt="Euro Luxe" class="signup-logo">
+        </header>
+
+        <!-- Time Estimate Banner -->
+        <div class="time-estimate">
+            ⏱️ Faça seu cadastro em menos de 2 minutos
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-wrapper">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Main Title -->
+        <div class="signup-title-section">
+            <h1 class="signup-title">Cadastro de Perfil Feminino</h1>
+            <p class="signup-subtitle">Curadoria Privada</p>
+            <p class="signup-description">Todos os perfis passam por análise manual para garantir segurança,
+                compatibilidade e exclusividade.</p>
+        </div>
+
+        <!-- Form -->
+        <form id="signupForm" class="signup-form">
+
+            <!-- ETAPA 1: Dados Básicos -->
+            <div class="form-step active" data-step="1">
+                <h2 class="step-title">Dados Básicos</h2>
+                <p class="step-description">Utilizamos essas informações apenas para verificação e comunicação segura.
+                </p>
+
+                <div class="form-group">
+                    <label for="nome_usuario">Nome de usuária *</label>
+                    <input type="text" id="nome_usuario" name="nome_usuario" required>
+                    <span class="field-hint">Este será seu nome público na plataforma</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="nome">Nome real (completo) *</label>
+                    <input type="text" id="nome" name="nome" required>
+                    <span class="field-hint">Apenas para verificação, não será exibido publicamente</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="idade">Idade *</label>
+                    <input type="number" id="idade" name="idade" min="18" max="99" required>
+                    <span class="field-hint">Você deve ter 18 anos ou mais</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha *</label>
+                    <input type="password" id="password" name="password" required minlength="6">
+                    <span class="field-hint">Mínimo 6 caracteres</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password_confirm">Confirme sua senha *</label>
+                    <input type="password" id="password_confirm" name="password_confirm" required minlength="6">
+                    <span class="field-hint">Digite a senha novamente</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="estado_pais">Estado / País *</label>
+                    <input type="text" id="estado_pais" name="estado_pais" required>
+                    <span class="field-hint">Ex: São Paulo, Brasil</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="whatsapp">WhatsApp (opcional)</label>
+                    <input type="tel" id="whatsapp" name="whatsapp" placeholder="+55 11 99999-9999">
+                </div>
+            </div>
+
+            <!-- ETAPA 2: Perfil Pessoal -->
+            <div class="form-step" data-step="2">
+                <h2 class="step-title">Perfil Pessoal</h2>
+                <p class="step-description">Nos conte um pouco sobre você.</p>
+
+                <div class="form-group">
+                    <label for="descricao">Como você se descreveria? *</label>
+                    <textarea id="descricao" name="descricao" rows="3" required
+                        placeholder="Ex: Sou uma pessoa comunicativa, discreta e criativa..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="busca">O que você busca nessa experiência? *</label>
+                    <textarea id="busca" name="busca" rows="4" required
+                        placeholder="Ex: Busco independência financeira, conhecer pessoas diferentes..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="idiomas">Idiomas que compreende (opcional)</label>
+                    <input type="text" id="idiomas" name="idiomas" placeholder="Ex: Português, Inglês básico, Espanhol">
+                </div>
+            </div>
+
+            <!-- ETAPA 3: Preferências de Interação -->
+            <div class="form-step" data-step="3">
+                <h2 class="step-title">Preferências de Interação</h2>
+                <p class="step-description">Quais tipos de interação você tem interesse em oferecer?</p>
+
+                <div class="checkbox-group">
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="preferencias" value="conversas_privadas">
+                        <span class="checkbox-label">💬 Conversas privadas</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="preferencias" value="chamadas_video">
+                        <span class="checkbox-label">📞 Chamadas de vídeo</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="preferencias" value="relacionamento_digital">
+                        <span class="checkbox-label">💌 Relacionamento digital contínuo</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="preferencias" value="conteudos_exclusivos">
+                        <span class="checkbox-label">📸 Venda de conteúdos exclusivos</span>
+                    </label>
+
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="preferencias" value="decidir_depois">
+                        <span class="checkbox-label">🤔 Prefiro decidir depois</span>
+                    </label>
+                </div>
+
+                <p class="step-footer-text">Você define seus próprios limites. Essas preferências podem ser alteradas a
+                    qualquer momento.</p>
+            </div>
+
+            <!-- ETAPA 4: Perfil Visual -->
+            <div class="form-step" data-step="4">
+                <h2 class="step-title">Perfil Visual</h2>
+                <p class="step-description">Envie até 4 fotos. Uma delas será sua foto de perfil (você poderá escolher).
+                </p>
+
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📸</div>
+                        <p class="upload-text">Clique ou arraste até 4 fotos</p>
+                        <p class="upload-hint">PNG, JPG até 5MB cada</p>
+                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                    </div>
+
+                    <div class="preview-grid" id="previewGrid"></div>
+                    <p class="upload-instruction" id="uploadInstruction"
+                        style="display: none; text-align: center; margin-top: 1rem; color: var(--color-primary);">
+                        👆 Clique na foto que deseja usar como foto de perfil
+                    </p>
+                </div>
+            </div>
+
+            <!-- ETAPA 5: Confirmação -->
+            <div class="form-step" data-step="5">
+                <h2 class="step-title">Confirmação e Envio</h2>
+                <p class="step-description">Revise e confirme suas informações.</p>
+
+                <div class="confirmation-section">
+                    <label class="checkbox-item large">
+                        <input type="checkbox" id="confirm18" required>
+                        <span class="checkbox-label">✓ Confirmo que sou maior de 18 anos</span>
+                    </label>
+
+                    <label class="checkbox-item large">
+                        <input type="checkbox" id="confirmTerms" required>
+                        <span class="checkbox-label">✓ Concordo com os termos de curadoria e segurança</span>
+                    </label>
+                </div>
+
+                <div class="submit-info">
+                    <p>Ao enviar, seu perfil será encaminhado para análise manual da nossa equipe.</p>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                    ← Voltar
+                </button>
+                <button type="button" class="btn btn-primary" id="nextBtn">
+                    Avançar →
+                </button>
+            </div>
+        </form>
+
+        <!-- Success Screen (Hidden) -->
+        <div class="success-screen" id="successScreen" style="display: none;">
+            <div class="success-header">
+                <div class="success-icon">✓</div>
+                <h2>Perfil recebido com sucesso</h2>
+                <p>Devido ao alto volume de cadastros, nossa equipe trabalha com uma fila de análise manual.</p>
+                <p class="highlight-text">Os perfis enviados para análise padrão entram em uma fila contínua, com prazo
+                    estimado de até 6 a 8 meses.</p>
+            </div>
+
+            <div class="options-grid">
+                <!-- Opção 1: Análise Padrão -->
+                <div class="option-card standard">
+                    <h3>Análise padrão</h3>
+                    <div class="option-features">
+                        <p>– Entrada em fila regular</p>
+                        <p>– Prazo estimado: até 6–8 meses</p>
+                        <p>– Sem prioridade de liberação</p>
+                    </div>
+                    <button class="btn btn-secondary" id="standardBtn">Entrar na fila</button>
+                </div>
+
+                <!-- Opção 2: Análise Prioritária -->
+                <div class="option-card priority">
+                    <div class="priority-badge">Recomendado</div>
+                    <h3>Análise prioritária — US$ 5</h3>
+                    <div class="option-features">
+                        <p>✓ Perfil analisado entre 15 minutos e até 24 horas</p>
+                        <p>✓ Liberação imediata após aprovação</p>
+                        <p>✓ Prioridade operacional na curadoria</p>
+                    </div>
+                    <button class="btn btn-primary" id="priorityBtn">Ativar análise prioritária</button>
+                    <p class="option-note">Taxa única de verificação. Não é mensalidade.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="signup.js"></script>
+</body>
+
+</html>

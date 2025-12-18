@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard - Euro Luxe">
+    <title>Dashboard - Euro Luxe</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="container">
+            <div class="header-content">
+                <img src="euro.png" alt="Euro Luxe" class="header-logo">
+
+                <div class="header-user">
+                    <div class="user-avatar">👤</div>
+                    <span class="user-name" id="userName">@Carregando...</span>
+                    <a href="login.html" class="btn-logout">Sair</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="container">
+            <div class="dashboard-content">
+                <!-- Sidebar -->
+                <aside class="dashboard-sidebar">
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title">🟢 Membros Online</h3>
+                        <p class="online-count" id="onlineCount">14 membros ativos agora</p>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h3 class="sidebar-title">📊 Seu Status</h3>
+                        <div class="status-badge inactive">Perfil Pendente</div>
+                        <p class="status-text">Aguardando aprovação da curadoria</p>
+                    </div>
+                </aside>
+
+                <!-- Members Grid -->
+                <section class="members-section">
+                    <h2 class="section-title">Membros Premium Disponíveis</h2>
+
+                    <div class="members-grid" id="membersGrid">
+                        <!-- Members will be loaded via JavaScript -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-overlay" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+
+            <div class="profile-header">
+                <img src="" alt="" class="profile-photo" id="modalPhoto">
+                <div class="profile-info">
+                    <h2 class="profile-name" id="modalName"></h2>
+                    <p class="profile-details" id="modalDetails"></p>
+                    <div class="profile-badge verified">✓ Verificado</div>
+                </div>
+            </div>
+
+            <div class="profile-body">
+                <h3>Sobre mim</h3>
+                <p id="modalBio"></p>
+
+                <h3>Interesses</h3>
+                <div class="interests-tags" id="modalInterests"></div>
+            </div>
+
+            <div class="profile-footer">
+                <button class="btn btn-primary" onclick="goToActivation()" style="cursor: pointer;">
+                    🔒 Ative seu perfil para mandar mensagem
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Popup -->
+    <div class="notification-popup" id="notificationPopup" style="display: none;">
+        <div class="notification-content">
+            <button class="notification-close" onclick="closeNotification()">×</button>
+
+            <div class="notification-icon">👁️</div>
+            <h3 class="notification-title">Seu perfil foi visualizado!</h3>
+            <p class="notification-text">Um membro premium visualizou seu perfil</p>
+
+            <div class="notification-divider"></div>
+
+            <div class="notification-offer">
+                <div class="offer-icon">💰</div>
+                <div class="offer-content">
+                    <h4>Nova Proposta Recebida</h4>
+                    <p class="offer-amount" id="offerAmount">€30,00</p>
+                    <p class="offer-from">de <strong id="offerFrom">Alessandro Romano</strong></p>
+                    <p class="offer-for" id="offerFor">Para uma conversa privada</p>
+                </div>
+            </div>
+
+            <div class="notification-cta">
+                <p class="cta-text">🔒 Ative seu perfil para aceitar esta proposta</p>
+                <button class="btn btn-primary" onclick="goToActivation()">
+                    Ativar Perfil Agora
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
