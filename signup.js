@@ -1,6 +1,11 @@
 // Sistema de cadastro - Euro Luxe
 console.log('Script carregado!');
 
+// Initialize Supabase
+const SUPABASE_URL = 'https://mfraaqpmenqwwkbwaodi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcmFhcXBtZW5xd3drYndhb2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQwMjczODYsImV4cCI6MjA0OTYwMzM4Nn0.g04gK88qCpKz5nnJdV4nMIuO49H00tKWPjfXIo7_lyw';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let currentStep = 1;
 const totalSteps = 5;
 let uploadedFiles = [];
@@ -95,11 +100,88 @@ document.addEventListener('DOMContentLoaded', function () {
 
             console.log('Avançou para etapa:', currentStep);
         } else {
-            // Formulário completo - redirecionar para página de ativação
-            console.log('Formulário enviado! Profile Photo Index:', profilePhotoIndex);
-            window.location.href = 'activate.html';
+            // Formulário completo - salvar no Supabase
+            saveProfile();
         }
     };
+
+    // Função para salvar perfil no Supabase
+    async function saveProfile() {
+        try {
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Salvando...';
+
+            // Coletar dados do formulário
+            const username = document.getElementById('username').value;
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const phone = document.getElementById('phone')?.value || '';
+            const instagram = document.getElementById('instagram')?.value || '';
+            const city = document.getElementById('city')?.value || '';
+
+            // Hash da senha (MUITO SIMPLES - apenas para demonstração)
+            const passwordHash = btoa(password); // Base64 - NÃO É SEGURO EM PRODUÇÃO!
+
+            // Upload das fotos
+            let photoUrls = [];
+            for (let i = 0; i < uploadedFiles.length; i++) {
+                const file = uploadedFiles[i];
+                const fileName = `${Date.now()}_${i}_${file.name}`;
+
+                const { data, error } = await supabase.storage
+                    .from('profile-photos')
+                    .upload(fileName, file);
+
+                if (error) {
+                    console.error('Erro upload foto:', error);
+                    continue;
+                }
+
+                const { data: urlData } = supabase.storage
+                    .from('profile-photos')
+                    .getPublicUrl(fileName);
+
+                photoUrls.push(urlData.publicUrl);
+            }
+
+            // Salvar perfil no banco
+            const { data, error } = await supabase
+                .from('profiles')
+                .insert([{
+                    username,
+                    email,
+                    password_hash: passwordHash,
+                    full_name: fullName,
+                    birth_date: birthDate,
+                    phone,
+                    instagram,
+                    city,
+                    profile_photo_url: photoUrls[profilePhotoIndex] || photoUrls[0] || null,
+                    status: 'pending'
+                }])
+                .select();
+
+            if (error) {
+                console.error('Erro ao salvar:', error);
+                alert('Erro ao salvar cadastro: ' + error.message);
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Enviar perfil para análise';
+                return;
+            }
+
+            console.log('Perfil salvo com sucesso:', data);
+            // Redirecionar para página de ativação
+            window.location.href = 'activate.html';
+
+        } catch (error) {
+            console.error('Erro geral:', error);
+            alert('Erro ao processar cadastro. Tente novamente.');
+            nextBtn.disabled = false;
+            nextBtn.textContent = 'Enviar perfil para análise';
+        }
+    }
 
     // Botão Voltar
     prevBtn.onclick = function (e) {
