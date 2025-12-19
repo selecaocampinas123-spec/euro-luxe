@@ -1,5 +1,5 @@
-// Sistema de cadastro - Euro Luxe
-console.log('Script carregado!');
+// Euro Luxe - Cadastro Failsafe (Senior Version)
+console.log('--- Script Iniciado ---');
 
 // Configurações do Supabase
 const SUPABASE_URL = 'https://mfraaqpmenqwwkbwaodi.supabase.co';
@@ -7,9 +7,11 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 let supabase;
 try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
 } catch (e) {
-    console.error('Falha ao inicializar Supabase:', e);
+    console.error('Supabase init error:', e);
 }
 
 let currentStep = 1;
@@ -17,170 +19,162 @@ const totalSteps = 5;
 let uploadedFiles = [];
 let profilePhotoIndex = 0;
 
-document.addEventListener('DOMContentLoaded', function () {
-    console.log('DOM carregado!');
+// Função principal de inicialização
+function initRegistration() {
+    console.log('Inicializando sistema de registro...');
 
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const progressFill = document.getElementById('progressFill');
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileInput');
-    const previewGrid = document.getElementById('previewGrid');
 
-    // Navegação e Validação
-    nextBtn.onclick = async function (e) {
+    if (!nextBtn) {
+        console.error('ERROR: nextBtn not found!');
+        return;
+    }
+
+    // Limpar listeners antigos se houver (caso o script rode duas vezes)
+    const newNextBtn = nextBtn.cloneNode(true);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+
+    newNextBtn.onclick = async function (e) {
         e.preventDefault();
+        console.log('Avançar clicado. Step:', currentStep);
 
         const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
         if (!currentStepEl) return;
 
-        // Seleciona campos obrigatórios (inputs e textareas)
-        const inputs = currentStepEl.querySelectorAll('input[required], textarea[required]');
-        let valid = true;
+        // Validação Simplificada
+        const inputs = Array.from(currentStepEl.querySelectorAll('input[required], textarea[required]'));
+        let stepValid = true;
+        let missingField = '';
 
-        inputs.forEach(input => {
-            if (input.type === 'checkbox') {
-                if (!input.checked) {
-                    valid = false;
-                    input.parentElement.style.border = '1px solid red';
-                } else {
-                    input.parentElement.style.border = '';
-                }
+        for (const input of inputs) {
+            const val = input.value ? input.value.trim() : '';
+            if (!val) {
+                stepValid = false;
+                input.style.borderColor = 'red';
+                missingField = input.parentElement.querySelector('label')?.innerText || input.id;
+                break;
             } else {
-                if (!input.value.trim()) {
-                    valid = false;
-                    input.style.borderColor = 'red';
-                } else {
-                    input.style.borderColor = '';
-                }
-            }
-        });
-
-        // Verificação específica de senha na Etapa 1
-        if (currentStep === 1) {
-            const pwd = document.getElementById('password');
-            const pwdConf = document.getElementById('password_confirm');
-            if (pwd && pwdConf) {
-                if (pwd.value.length < 6) {
-                    alert('A senha deve ter no mínimo 6 caracteres');
-                    return;
-                }
-                if (pwd.value !== pwdConf.value) {
-                    alert('As senhas não coincidem');
-                    return;
-                }
+                input.style.borderColor = '#ddd';
             }
         }
 
-        if (!valid) {
-            alert('Por favor, preencha todos os campos obrigatórios (*) para continuar.');
+        // Senhas na etapa 1
+        if (currentStep === 1) {
+            const p1 = document.getElementById('password');
+            const p2 = document.getElementById('password_confirm');
+            if (p1 && p1.value.length < 6) {
+                alert('A senha deve ter pelo menos 6 caracteres.');
+                return;
+            }
+            if (p1 && p2 && p1.value !== p2.value) {
+                alert('As senhas não coincidem.');
+                return;
+            }
+        }
+
+        if (!stepValid) {
+            alert('Por favor, preencha: ' + missingField.replace('*', ''));
             return;
         }
 
-        // Avançar ou Salvar
+        // Transição
         if (currentStep < totalSteps) {
             currentStepEl.classList.remove('active');
             currentStep++;
             const nextStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-            nextStepEl.classList.add('active');
-
-            progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
-            prevBtn.style.display = 'block';
-
-            if (currentStep === totalSteps) {
-                nextBtn.textContent = 'Finalizar Registro';
+            if (nextStepEl) {
+                nextStepEl.classList.add('active');
+                if (progressFill) progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
+                if (prevBtn) prevBtn.style.display = 'block';
+                if (currentStep === totalSteps) newNextBtn.textContent = 'Finalizar Registro';
+                window.scrollTo(0, 0);
             }
         } else {
-            await saveToSupabase();
+            await finalizeRegistration(newNextBtn);
         }
     };
 
-    prevBtn.onclick = function () {
-        if (currentStep > 1) {
-            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-            currentStep--;
-            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
-            progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
-            if (currentStep === 1) prevBtn.style.display = 'none';
-            nextBtn.textContent = 'Avançar →';
-        }
-    };
-
-    async function saveToSupabase() {
-        if (!supabase) {
-            alert('Erro de conexão com o servidor. Tente recarregar a página.');
-            return;
-        }
-
-        try {
-            nextBtn.disabled = true;
-            nextBtn.textContent = 'Enviando...';
-
-            // Mapeamento dos campos conforme sua tabela 'profiles'
-            const profileData = {
-                username: document.getElementById('username').value,
-                email: document.getElementById('email').value,
-                full_name: document.getElementById('fullName').value,
-                birth_date: document.getElementById('birthDate').value,
-                // Mapeando IDs do HTML para colunas do Banco
-                city: document.getElementById('estado_pais').value,
-                phone: document.getElementById('whatsapp').value || null,
-                password_hash: btoa(document.getElementById('password').value), // Simples para teste
-                status: 'pending'
-            };
-
-            // Upload de fotos se existirem
-            let photoUrl = null;
-            if (uploadedFiles.length > 0) {
-                const file = uploadedFiles[profilePhotoIndex] || uploadedFiles[0];
-                const fileName = `profile_${Date.now()}_${profileData.username}`;
-
-                const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('profile-photos')
-                    .upload(fileName, file);
-
-                if (!uploadError) {
-                    const { data: publicURL } = supabase.storage.from('profile-photos').getPublicUrl(fileName);
-                    photoUrl = publicURL.publicUrl;
-                }
+    if (prevBtn) {
+        prevBtn.onclick = function (e) {
+            e.preventDefault();
+            if (currentStep > 1) {
+                document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+                currentStep--;
+                document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+                if (progressFill) progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
+                if (currentStep === 1) prevBtn.style.display = 'none';
+                newNextBtn.textContent = 'Avançar →';
+                window.scrollTo(0, 0);
             }
+        };
+    }
+}
 
-            profileData.profile_photo_url = photoUrl;
-
-            // Inserção no Banco
-            const { error: dbError } = await supabase
-                .from('profiles')
-                .insert([profileData]);
-
-            if (dbError) throw dbError;
-
-            // Sucesso
-            window.location.href = 'activate.html';
-
-        } catch (err) {
-            console.error('Erro no salvamento:', err);
-            alert('Erro ao salvar no banco: ' + (err.message || 'Verifique sua conexão'));
-            nextBtn.disabled = false;
-            nextBtn.textContent = 'Finalizar Registro';
-        }
+async function finalizeRegistration(btn) {
+    if (!supabase) {
+        alert('Erro de conexão. Tente novamente.');
+        return;
     }
 
-    // Lógica de Upload (Simplificada para estabilidade)
-    uploadArea.onclick = () => fileInput.click();
-    fileInput.onchange = (e) => {
+    try {
+        btn.disabled = true;
+        btn.textContent = 'Salvando...';
+
+        const data = {
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            full_name: document.getElementById('fullName').value,
+            birth_date: document.getElementById('birthDate').value,
+            city: document.getElementById('estado_pais').value,
+            phone: document.getElementById('whatsapp')?.value || null,
+            password_hash: btoa(document.getElementById('password').value),
+            status: 'pending'
+        };
+
+        // Enviar para o banco
+        const { error } = await supabase.from('profiles').insert([data]);
+        if (error) throw error;
+
+        window.location.href = 'activate.html';
+    } catch (err) {
+        alert('Erro ao salvar: ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Finalizar Registro';
+    }
+}
+
+// Inicia imediatamente ou quando o DOM estiver pronto
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initRegistration();
+} else {
+    document.addEventListener('DOMContentLoaded', initRegistration);
+}
+
+// Lógica de fotos (simplificada)
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'fileInput') {
         const files = Array.from(e.target.files);
+        const grid = document.getElementById('previewGrid');
         files.forEach(file => {
             if (uploadedFiles.length < 4) {
                 uploadedFiles.push(file);
                 const reader = new FileReader();
-                reader.onload = (ev) => {
-                    const div = document.createElement('div');
-                    div.className = 'preview-item';
-                    div.innerHTML = `<img src="${ev.target.result}"><div class="preview-remove">×</div>`;
-                    previewGrid.appendChild(div);
+                reader.onload = (re) => {
+                    const item = document.createElement('div');
+                    item.className = 'preview-item';
+                    item.innerHTML = `<img src="${re.target.result}"><div class="preview-remove">×</div>`;
+                    grid.appendChild(item);
                 };
                 reader.readAsDataURL(file);
             }
         });
-    };
+    }
 });
+
+// Arrastar e soltar básico
+const area = document.getElementById('uploadArea');
+if (area) {
+    area.onclick = () => document.getElementById('fileInput').click();
+}
