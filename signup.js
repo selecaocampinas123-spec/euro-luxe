@@ -1,10 +1,16 @@
 // Sistema de cadastro - Euro Luxe
 console.log('Script carregado!');
 
-// Initialize Supabase
+// Configurações do Supabase
 const SUPABASE_URL = 'https://mfraaqpmenqwwkbwaodi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mcmFhcXBtZW5xd3drYndhb2RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQwMjczODYsImV4cCI6MjA0OTYwMzM4Nn0.g04gK88qCpKz5nnJdV4nMIuO49H00tKWPjfXIo7_lyw';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let supabase;
+try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) {
+    console.error('Falha ao inicializar Supabase:', e);
+}
 
 let currentStep = 1;
 const totalSteps = 5;
@@ -20,27 +26,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
     const previewGrid = document.getElementById('previewGrid');
-    const uploadInstruction = document.getElementById('uploadInstruction');
 
-    console.log('Botões encontrados:', { prevBtn, nextBtn, progressFill });
-
-    // Botão Avançar
-    nextBtn.onclick = function (e) {
+    // Navegação e Validação
+    nextBtn.onclick = async function (e) {
         e.preventDefault();
-        console.log('Botão Avançar clicado! Etapa atual:', currentStep);
 
-        // Validação
-        const currentStepEl = document.querySelector('.form-step.active');
+        const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
+        if (!currentStepEl) return;
+
+        // Seleciona campos obrigatórios (inputs e textareas)
         const inputs = currentStepEl.querySelectorAll('input[required], textarea[required]');
-
         let valid = true;
+
         inputs.forEach(input => {
             if (input.type === 'checkbox') {
                 if (!input.checked) {
                     valid = false;
-                    input.parentElement.style.borderColor = 'red';
+                    input.parentElement.style.border = '1px solid red';
                 } else {
-                    input.parentElement.style.borderColor = '';
+                    input.parentElement.style.border = '';
                 }
             } else {
                 if (!input.value.trim()) {
@@ -52,279 +56,131 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // Validação especial para etapa 1 (senhas)
+        // Verificação específica de senha na Etapa 1
         if (currentStep === 1) {
-            const password = document.getElementById('password').value;
-            const passwordConfirm = document.getElementById('password_confirm').value;
-
-            if (password.length < 6) {
-                alert('A senha deve ter no mínimo 6 caracteres.');
-                document.getElementById('password').style.borderColor = 'red';
-                return;
+            const pwd = document.getElementById('password');
+            const pwdConf = document.getElementById('password_confirm');
+            if (pwd && pwdConf) {
+                if (pwd.value.length < 6) {
+                    alert('A senha deve ter no mínimo 6 caracteres');
+                    return;
+                }
+                if (pwd.value !== pwdConf.value) {
+                    alert('As senhas não coincidem');
+                    return;
+                }
             }
-
-            if (password !== passwordConfirm) {
-                alert('As senhas não coincidem. Por favor, verifique.');
-                document.getElementById('password_confirm').style.borderColor = 'red';
-                return;
-            }
-        }
-
-        // Validação especial da etapa 4 (fotos) - opcional, até 4 fotos
-        if (currentStep === 4 && uploadedFiles.length > 4) {
-            alert('Máximo de 4 fotos permitidas.');
-            valid = false;
         }
 
         if (!valid) {
-            alert('Por favor, preencha todos os campos obrigatórios');
+            alert('Por favor, preencha todos os campos obrigatórios (*) para continuar.');
             return;
         }
 
+        // Avançar ou Salvar
         if (currentStep < totalSteps) {
             currentStepEl.classList.remove('active');
             currentStep++;
             const nextStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
             nextStepEl.classList.add('active');
 
-            const progress = (currentStep / totalSteps) * 100;
-            progressFill.style.width = progress + '%';
-
-            if (currentStep > 1) {
-                prevBtn.style.display = 'block';
-            }
+            progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
+            prevBtn.style.display = 'block';
 
             if (currentStep === totalSteps) {
-                nextBtn.textContent = 'Enviar perfil para análise';
+                nextBtn.textContent = 'Finalizar Registro';
             }
-
-            console.log('Avançou para etapa:', currentStep);
         } else {
-            // Formulário completo - salvar no Supabase
-            saveProfile();
+            await saveToSupabase();
         }
     };
 
-    // Função para salvar perfil no Supabase
-    async function saveProfile() {
+    prevBtn.onclick = function () {
+        if (currentStep > 1) {
+            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
+            currentStep--;
+            document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.add('active');
+            progressFill.style.width = (currentStep / totalSteps) * 100 + '%';
+            if (currentStep === 1) prevBtn.style.display = 'none';
+            nextBtn.textContent = 'Avançar →';
+        }
+    };
+
+    async function saveToSupabase() {
+        if (!supabase) {
+            alert('Erro de conexão com o servidor. Tente recarregar a página.');
+            return;
+        }
+
         try {
             nextBtn.disabled = true;
-            nextBtn.textContent = 'Salvando...';
+            nextBtn.textContent = 'Enviando...';
 
-            // Coletar dados do formulário
-            const username = document.getElementById('username').value;
-            const fullName = document.getElementById('fullName').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const birthDate = document.getElementById('birthDate').value;
-            const phone = document.getElementById('phone')?.value || '';
-            const instagram = document.getElementById('instagram')?.value || '';
-            const city = document.getElementById('city')?.value || '';
+            // Mapeamento dos campos conforme sua tabela 'profiles'
+            const profileData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                full_name: document.getElementById('fullName').value,
+                birth_date: document.getElementById('birthDate').value,
+                // Mapeando IDs do HTML para colunas do Banco
+                city: document.getElementById('estado_pais').value,
+                phone: document.getElementById('whatsapp').value || null,
+                password_hash: btoa(document.getElementById('password').value), // Simples para teste
+                status: 'pending'
+            };
 
-            // Hash da senha (MUITO SIMPLES - apenas para demonstração)
-            const passwordHash = btoa(password); // Base64 - NÃO É SEGURO EM PRODUÇÃO!
+            // Upload de fotos se existirem
+            let photoUrl = null;
+            if (uploadedFiles.length > 0) {
+                const file = uploadedFiles[profilePhotoIndex] || uploadedFiles[0];
+                const fileName = `profile_${Date.now()}_${profileData.username}`;
 
-            // Upload das fotos
-            let photoUrls = [];
-            for (let i = 0; i < uploadedFiles.length; i++) {
-                const file = uploadedFiles[i];
-                const fileName = `${Date.now()}_${i}_${file.name}`;
-
-                const { data, error } = await supabase.storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('profile-photos')
                     .upload(fileName, file);
 
-                if (error) {
-                    console.error('Erro upload foto:', error);
-                    continue;
+                if (!uploadError) {
+                    const { data: publicURL } = supabase.storage.from('profile-photos').getPublicUrl(fileName);
+                    photoUrl = publicURL.publicUrl;
                 }
-
-                const { data: urlData } = supabase.storage
-                    .from('profile-photos')
-                    .getPublicUrl(fileName);
-
-                photoUrls.push(urlData.publicUrl);
             }
 
-            // Salvar perfil no banco
-            const { data, error } = await supabase
+            profileData.profile_photo_url = photoUrl;
+
+            // Inserção no Banco
+            const { error: dbError } = await supabase
                 .from('profiles')
-                .insert([{
-                    username,
-                    email,
-                    password_hash: passwordHash,
-                    full_name: fullName,
-                    birth_date: birthDate,
-                    phone,
-                    instagram,
-                    city,
-                    profile_photo_url: photoUrls[profilePhotoIndex] || photoUrls[0] || null,
-                    status: 'pending'
-                }])
-                .select();
+                .insert([profileData]);
 
-            if (error) {
-                console.error('Erro ao salvar:', error);
-                alert('Erro ao salvar cadastro: ' + error.message);
-                nextBtn.disabled = false;
-                nextBtn.textContent = 'Enviar perfil para análise';
-                return;
-            }
+            if (dbError) throw dbError;
 
-            console.log('Perfil salvo com sucesso:', data);
-            // Redirecionar para página de ativação
+            // Sucesso
             window.location.href = 'activate.html';
 
-        } catch (error) {
-            console.error('Erro geral:', error);
-            alert('Erro ao processar cadastro. Tente novamente.');
+        } catch (err) {
+            console.error('Erro no salvamento:', err);
+            alert('Erro ao salvar no banco: ' + (err.message || 'Verifique sua conexão'));
             nextBtn.disabled = false;
-            nextBtn.textContent = 'Enviar perfil para análise';
+            nextBtn.textContent = 'Finalizar Registro';
         }
     }
 
-    // Botão Voltar
-    prevBtn.onclick = function (e) {
-        e.preventDefault();
-        console.log('Botão Voltar clicado!');
-
-        if (currentStep > 1) {
-            const currentStepEl = document.querySelector('.form-step.active');
-            currentStepEl.classList.remove('active');
-
-            currentStep--;
-            const prevStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-            prevStepEl.classList.add('active');
-
-            const progress = (currentStep / totalSteps) * 100;
-            progressFill.style.width = progress + '%';
-
-            if (currentStep === 1) {
-                prevBtn.style.display = 'none';
-            }
-
-            nextBtn.textContent = 'Avançar →';
-
-            console.log('Voltou para etapa:', currentStep);
-        }
-    };
-
-    // Upload de Fotos
-    uploadArea.onclick = function () {
-        fileInput.click();
-    };
-
-    fileInput.onchange = function (e) {
+    // Lógica de Upload (Simplificada para estabilidade)
+    uploadArea.onclick = () => fileInput.click();
+    fileInput.onchange = (e) => {
         const files = Array.from(e.target.files);
-        addFiles(files);
-    };
-
-    uploadArea.ondragover = function (e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = 'var(--color-primary)';
-    };
-
-    uploadArea.ondragleave = function (e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '';
-    };
-
-    uploadArea.ondrop = function (e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '';
-        const files = Array.from(e.dataTransfer.files);
-        addFiles(files);
-    };
-
-    function addFiles(files) {
-        const imageFiles = files.filter(file => file.type.startsWith('image/'));
-
-        imageFiles.forEach(file => {
-            if (file.size > 5 * 1024 * 1024) {
-                alert(`${file.name} é muito grande. Máximo 5MB por foto.`);
-                return;
+        files.forEach(file => {
+            if (uploadedFiles.length < 4) {
+                uploadedFiles.push(file);
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = `<img src="${ev.target.result}"><div class="preview-remove">×</div>`;
+                    previewGrid.appendChild(div);
+                };
+                reader.readAsDataURL(file);
             }
-
-            if (uploadedFiles.length >= 4) {
-                alert('Você já enviou 4 fotos. Remova uma para adicionar outra.');
-                return;
-            }
-
-            uploadedFiles.push(file);
-            createPreview(file, uploadedFiles.length - 1);
         });
-
-        if (uploadedFiles.length > 0) {
-            uploadInstruction.style.display = 'block';
-        }
-
-        console.log('Fotos carregadas:', uploadedFiles.length);
-    }
-
-    function createPreview(file, index) {
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-            const previewItem = document.createElement('div');
-            previewItem.className = 'preview-item';
-            previewItem.dataset.index = index;
-
-            // Primeira foto é perfil por padrão
-            if (index === 0) {
-                previewItem.classList.add('profile-photo');
-                const badge = document.createElement('div');
-                badge.className = 'profile-badge';
-                badge.textContent = 'PERFIL';
-                previewItem.appendChild(badge);
-            }
-
-            const img = document.createElement('img');
-            img.src = e.target.result;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'preview-remove';
-            removeBtn.innerHTML = '×';
-            removeBtn.onclick = function (event) {
-                event.stopPropagation();
-                const photoIndex = parseInt(previewItem.dataset.index);
-                uploadedFiles.splice(photoIndex, 1);
-
-                // Recriar previews
-                previewGrid.innerHTML = '';
-                uploadedFiles.forEach((f, i) => createPreview(f, i));
-
-                if (uploadedFiles.length === 0) {
-                    uploadInstruction.style.display = 'none';
-                }
-
-                console.log('Foto removida. Total:', uploadedFiles.length);
-            };
-
-            // Click na foto para selecionar como perfil
-            previewItem.onclick = function () {
-                document.querySelectorAll('.preview-item').forEach(item => {
-                    item.classList.remove('profile-photo');
-                    const oldBadge = item.querySelector('.profile-badge');
-                    if (oldBadge) oldBadge.remove();
-                });
-
-                previewItem.classList.add('profile-photo');
-                const badge = document.createElement('div');
-                badge.className = 'profile-badge';
-                badge.textContent = 'PERFIL';
-                previewItem.insertBefore(badge, previewItem.firstChild);
-
-                profilePhotoIndex = parseInt(previewItem.dataset.index);
-                console.log('Foto de perfil selecionada:', profilePhotoIndex);
-            };
-
-            previewItem.appendChild(img);
-            previewItem.appendChild(removeBtn);
-            previewGrid.appendChild(previewItem);
-        };
-
-        reader.readAsDataURL(file);
-    }
-
-    console.log('Event listeners configurados!');
+    };
 });
