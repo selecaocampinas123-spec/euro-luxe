@@ -2,6 +2,7 @@
 // Lógica imperativa direta, sem listeners complexos
 
 console.log('Script failsafe carregado.');
+alert('SISTEMA DE CADASTRO OTIMIZADO V3.0 CARREGADO - Se você vê isso, o código novo está rodando.');
 
 // Estado Global
 window.currentStep = 1;
