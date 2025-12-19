@@ -39,10 +39,10 @@
         </div>
 
         <!-- Form -->
-        <form id="signupForm" class="signup-form">
+        <form id="signupForm" class="signup-form" onsubmit="return false;">
 
             <!-- ETAPA 1: Dados Básicos -->
-            <div class="form-step active" data-step="1">
+            <div class="form-step active" id="step-1">
                 <h2 class="step-title">Dados Básicos</h2>
                 <p class="step-description">Utilizamos essas informações apenas para verificação e comunicação segura.
                 </p>
@@ -95,7 +95,7 @@
             </div>
 
             <!-- ETAPA 2: Perfil Pessoal -->
-            <div class="form-step" data-step="2">
+            <div class="form-step" id="step-2">
                 <h2 class="step-title">Perfil Pessoal</h2>
                 <p class="step-description">Nos conte um pouco sobre você.</p>
 
@@ -118,7 +118,7 @@
             </div>
 
             <!-- ETAPA 3: Preferências de Interação -->
-            <div class="form-step" data-step="3">
+            <div class="form-step" id="step-3">
                 <h2 class="step-title">Preferências de Interação</h2>
                 <p class="step-description">Quais tipos de interação você tem interesse em oferecer?</p>
 
@@ -154,17 +154,18 @@
             </div>
 
             <!-- ETAPA 4: Perfil Visual -->
-            <div class="form-step" data-step="4">
+            <div class="form-step" id="step-4">
                 <h2 class="step-title">Perfil Visual</h2>
                 <p class="step-description">Envie até 4 fotos. Uma delas será sua foto de perfil (você poderá escolher).
                 </p>
 
                 <div class="upload-section">
-                    <div class="upload-area" id="uploadArea">
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                         <div class="upload-icon">📸</div>
                         <p class="upload-text">Clique ou arraste até 4 fotos</p>
                         <p class="upload-hint">PNG, JPG até 5MB cada</p>
-                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                        <input type="file" id="fileInput" accept="image/*" multiple style="display: none;"
+                            onchange="window.handleFiles(this.files)">
                     </div>
 
                     <div class="preview-grid" id="previewGrid"></div>
@@ -176,7 +177,7 @@
             </div>
 
             <!-- ETAPA 5: Confirmação -->
-            <div class="form-step" data-step="5">
+            <div class="form-step" id="step-5">
                 <h2 class="step-title">Confirmação e Envio</h2>
                 <p class="step-description">Revise e confirme suas informações.</p>
 
@@ -199,10 +200,11 @@
 
             <!-- Navigation Buttons -->
             <div class="form-navigation">
-                <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">
+                <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;"
+                    onclick="window.prevStep()">
                     ← Voltar
                 </button>
-                <button type="button" class="btn btn-primary" id="nextBtn">
+                <button type="button" class="btn btn-primary" id="nextBtn" onclick="window.nextStep()">
                     Avançar →
                 </button>
             </div>
