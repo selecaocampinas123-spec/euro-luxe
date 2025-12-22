@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Cadastro de perfil feminino - Euro Luxe">
+    <title>Cadastro - Euro Luxe</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="signup.css">
+</head>
+
+<body>
+    <div class="signup-container">
+        <!-- Header -->
+        <header class="signup-header">
+            <a href="index.html" class="back-link">← Voltar</a>
+            <img src="euro.png" alt="Euro Luxe" class="signup-logo">
+        </header>
+
+        <!-- Time Estimate Banner -->
+        <div class="time-estimate">
+            ⏱️ Faça seu cadastro em menos de 2 minutos
+        </div>
+
+        <!-- Main Title -->
+        <div class="signup-title-section">
+            <h1 class="signup-title">Cadastro Simplificado</h1>
+            <p class="signup-subtitle">Curadoria Privada - Euro Luxe</p>
+        </div>
+
+        <!-- Form -->
+        <form id="cadastroForm" class="signup-form" onsubmit="return false;">
+
+            <!-- STEP 1 -->
+            <div id="step-1" class="form-step active" style="display: block;">
+                <h2 class="step-title">1. Dados Básicos</h2>
+
+                <div class="form-group">
+                    <label>Nome de Usuária *</label>
+                    <input type="text" id="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail *</label>
+                    <input type="email" id="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Senha (mín. 6 caracteres) *</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Nome Completo (Real) *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Data de Nascimento *</label>
+                    <input type="date" id="birthDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cidade / País *</label>
+                    <input type="text" id="city" required>
+                </div>
+
+                <div class="form-group">
+                    <label>WhatsApp</label>
+                    <input type="text" id="phone" placeholder="+55...">
+                </div>
+
+                <div class="form-navigation">
+                    <button class="btn btn-primary" onclick="goToStep2()">Próximo →</button>
+                </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div id="step-2" class="form-step" style="display: none;">
+                <h2 class="step-title">2. Sobre Você</h2>
+
+                <div class="form-group">
+                    <label>Como você se descreve? *</label>
+                    <textarea id="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>O que você busca? *</label>
+                    <textarea id="goal" rows="3"></textarea>
+                </div>
+
+                <div class="form-navigation">
+                    <button class="btn btn-secondary" onclick="showStep(1)">← Voltar</button>
+                    <button class="btn btn-primary" onclick="finishRegistration()">FINALIZAR CADASTRO</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Supabase & Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="cadastro.js"></script>
+</body>
+
+</html>
